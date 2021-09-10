@@ -1,23 +1,23 @@
-FROM alpine:3.12.1 as config-alpine
+ARG ALPINE_TAG=3.14.1
+FROM alpine:$ALPINE_TAG as config-alpine
 
 RUN apk add --no-cache tzdata
 
 RUN cp -v /usr/share/zoneinfo/America/New_York /etc/localtime
 RUN echo "America/New_York" > /etc/timezone
 
-FROM alpine:3.12.1 as src-redis
+FROM alpine:$ALPINE_TAG as src-redis
 
-# ADD http://download.redis.io/redis-stable.tar.gz /redis-stable.tar.gz
-# RUN tar xzvf redis-stable.tar.gz
+ARG BRANCH=v0.0.0
 
-RUN apk add --no-cache
+RUN apk add --no-cache \
  build-base \
  git \
  linux-headers \
  pkgconfig \
  tcl
 
-git clone --branch v2.0.4-stable --depth 1 https://github.com/redis/redis.git
+RUN git clone --branch $BRANCH --depth 1 https://github.com/redis/redis.git
 
 WORKDIR /redis
 
@@ -25,7 +25,7 @@ RUN make
 
 # RUN make test
 
-FROM alpine:3.12.1
+FROM alpine:$ALPINE_TAG
 
 COPY --from=config-alpine /etc/localtime /etc/localtime
 COPY --from=config-alpine /etc/timezone /etc/timezone
@@ -39,13 +39,18 @@ COPY --from=src-redis /redis/src/redis-cli /usr/bin/redis-cli
 COPY --from=src-redis /redis/src/redis-sentinel /usr/bin/redis-sentinel
 COPY --from=src-redis /redis/src/redis-server /usr/bin/redis-server
 
+# COPY redis.conf /etc/redis/redis.conf
 
-COPY redis.conf /etc/redis/redis.conf
+RUN mkdir -p /etc/redis /opt/redis-data
 
-RUN adduser -D -s /bin/sh redis \
- && echo 'redis:redis' | chpasswd \
- && mkdir -p /opt/redis-data \
- && chown -R redis:redis /etc/redis
+ARG USER=redis
+RUN addgroup $USER \
+ && adduser -D -s /bin/sh -G $USER $USER \
+ && echo "$USER:$USER" | chpasswd
+
+RUN chown $USER:$USER -R /etc/redis /opt/redis-data
+
+# USER $USER
 
 ENTRYPOINT ["/usr/bin/redis-server"]
 # CMD ["redis-server", "/etc/redis/redis.conf"]

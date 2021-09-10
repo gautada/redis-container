@@ -1,7 +1,30 @@
 # redis
 
-[Container on Docker Hub|https://hub.docker.com/_/redis]
-[Homepage|https://redis.io]
+[Redis](https://redis.io) is an open source (BSD licensed), in-memory data structure store, used as a database, cache, and message broker. Redis provides data structures such as strings, hashes, lists, sets, sorted sets with range queries, bitmaps, hyperloglogs, geospatial indexes, and streams. Redis has built-in replication, Lua scripting, LRU eviction, transactions, and different levels of on-disk persistence, and provides high availability via Redis Sentinel and automatic partitioning with Redis Cluster.
+
+## Container
+
+### Repositories
+
+- [Source Code](https://github.com/redis/redis)
+- [Container](https://hub.docker.com/repository/docker/gautada/redis)
+
+### Versions
+
+- [September 10, 2021](https://redis.io/download) - Active version is 6.2.5 as tag [v6.2.5](https://github.com/redis/redis/tags)
+
+### Manual
+
+#### Build
+
+```
+docker build --build-arg ALPINE_TAG=3.14.2 --build-arg BRANCH=v6.2.5 --file Containerfile --tag gitea:dev .
+```
+
+
+
+
+
 
 ## Configuration
 
